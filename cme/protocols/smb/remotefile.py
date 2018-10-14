@@ -8,10 +8,14 @@ class RemoteFile:
         self.__fileName = fileName
         self.__tid = self.__smbConnection.connectTree(share)
         self.__fid = None
+        self.__info = None
         self.__currentOffset = 0
 
     def open(self):
         self.__fid = self.__smbConnection.openFile(self.__tid, self.__fileName, desiredAccess= self.__access)
+
+    def queryInfo(self):
+        self.__info = self.__smbConnection.queryInfo(self.__tid, self.__fid)
 
     def seek(self, offset, whence):
         # Implement whence, for now it's always from the beginning of the file
@@ -24,6 +28,11 @@ class RemoteFile:
             self.__currentOffset += len(data)
             return data
         return ''
+
+    def size(self):
+        if not self.__info:
+            self.queryInfo()
+        return self.__info["AllocationSize"]
 
     def close(self):
         if self.__fid is not None:
